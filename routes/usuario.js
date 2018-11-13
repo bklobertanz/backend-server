@@ -2,16 +2,14 @@ var express = require('express');
 var app = express();
 var Usuario = require('../models/usuario');
 var bcrypt = require('bcryptjs');
-var jwt = require('jsonwebtoken');
 var mdAutenticacion = require('../middlewares/autenticacion');
 
 
 
 //Devuelve todos los usuarios registrados. 
-
-app.get('/', (req, res, next)=>{
+app.get('/', (req, res)=>{
    
-    Usuario.find({}, 'nombre email img role')
+    Usuario.find({}, 'nombre email carpeta')
         .exec(
                 (err, usuarios)=>{
                 
@@ -26,25 +24,24 @@ app.get('/', (req, res, next)=>{
 
                 res.status(200).json({
                     ok:true,
-                    mensaje: "Usuarios cargados correctamente",
                     usuarios: usuarios
                 });
             });
 });
 
-
-
 //Crear un usuario
-app.post('/', mdAutenticacion.verificaToken, (req, res)=>{
+app.post('/', mdAutenticacion.verificaToken,(req, res)=>{
 
     var body = req.body;
 
     var usuario = new Usuario({
         nombre: body.nombre,
         email: body.email,
-        password: bcrypt.hashSync(body.password,10),
-        img: body.img,
-        role: body.role
+        contrasena: bcrypt.hashSync(body.contrasena,10),
+        pAdmin: body.pAdmin,
+        pCarpetas: body.pCarpetas,
+        pSesiones: body.pSesiones,
+        duenoSesion: body.duenoSesion
     });
 
     usuario.save((err, usuarioGuardado)=>{
@@ -55,6 +52,8 @@ app.post('/', mdAutenticacion.verificaToken, (req, res)=>{
                 errors: err
             });
         }
+        usuarioGuardado.contrasena = ":x";
+        req.usuario.contrasena = ":x";
         res.status(201).json({
             ok: true,
             usuario: usuarioGuardado,
@@ -67,7 +66,7 @@ app.post('/', mdAutenticacion.verificaToken, (req, res)=>{
 
 //Actualizar un usuario
 
-app.put('/:id', mdAutenticacion.verificaToken,(req, res)=>{
+app.put('/:id', mdAutenticacion.verificaToken, (req, res)=>{
 
     var id = req.params.id;
     var body = req.body;
@@ -88,10 +87,13 @@ app.put('/:id', mdAutenticacion.verificaToken,(req, res)=>{
                 errors: err
             });
         }
-        
         usuario.nombre = body.nombre;
-        usuario.email = body.email;
-        usuario.role = body.role; 
+        //usuario.email = body.email;
+        //si el usuario es admin
+        usuario.pAdmin = body.pAdmin;
+        usuario.pCarpetas = body.pCarpetas;
+        usuario.pSesiones = body.pSesiones;
+        usuario.duenoSesion = body.duenoSesion;
 
         usuario.save((err, usuarioGuardado)=>{
 

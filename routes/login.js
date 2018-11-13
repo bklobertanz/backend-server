@@ -2,6 +2,8 @@ var express = require('express');
 var app = express();
 var bcrypt = require('bcryptjs');
 var Usuario = require('../models/usuario');
+var jwt = require('jsonwebtoken');
+var SEED = require('../config/config').SEED;
 
 
 app.post('/', (req,res)=>{
@@ -24,17 +26,17 @@ app.post('/', (req,res)=>{
                 errors: err
             });
         }
-        if(!bcrypt.compareSync(body.password, usuarioDB.password)){
+        if(!bcrypt.compareSync(body.contrasena, usuarioDB.contrasena)){
 
             return res.status(400).json({
                 ok: false,
-                mensaje: 'Credenciales incorrectas - password.',
+                mensaje: 'Credenciales incorrectas - contraseña.',
                 errors: err
             });
         }
         //Crear token             payload                seed y/o secret                tiempo de validez
         usuarioDB.password = ':P';
-        var token = jwt.sign({ usuario: usuarioDB }, SEED,{ expiresIn: 3600});
+        var token = jwt.sign({ usuario: usuarioDB }, SEED,{ expiresIn: '1w'});
 
         res.status(200).json({
             ok: true,

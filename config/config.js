@@ -1,1 +1,1 @@
-module.exports.SEED = 'este-es-un-seed-dificil-y-largo';
+module.exports.SEED = "este-es-un-seed-dificil-y-largo";
